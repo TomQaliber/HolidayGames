@@ -5,6 +5,7 @@ import type { DayChallenge, Player, ResultEntry } from "@/lib/types";
 import { parseTimeInput } from "@/lib/holiday";
 import ResultInput from "@/components/ResultInput";
 import PlayerGroupSections from "@/components/PlayerGroupSections";
+import { celebrateResults } from "@/lib/celebrate";
 
 interface ScorekeeperFormProps {
   challenge: DayChallenge;
@@ -118,6 +119,7 @@ export default function ScorekeeperForm({
 
       setMessage(`Saved ${entries.length} result${entries.length === 1 ? "" : "s"}!`);
       setOpen(false);
+      celebrateResults(entries.length);
       onSaved();
     } catch {
       setError("Something went wrong. Try again.");
