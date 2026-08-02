@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getDayByDate } from "@/lib/holiday";
 import { getResultsForDate, saveResultsBatch } from "@/lib/results";
 import { getPlayers } from "@/lib/players";
+import { hasKvConfig } from "@/lib/kv";
 import type { BatchResultPayload } from "@/lib/types";
 
 export async function GET(request: Request) {
@@ -19,7 +20,10 @@ export async function GET(request: Request) {
     .map((player) => results.find((r) => r.playerId === player.id))
     .filter((r): r is NonNullable<typeof r> => r !== undefined);
 
-  return NextResponse.json({ results: ordered });
+  return NextResponse.json({
+    results: ordered,
+    storage: hasKvConfig() ? "redis" : "local",
+  });
 }
 
 export async function POST(request: Request) {
@@ -35,25 +39,68 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No challenge for this date" }, { status: 404 });
   }
 
-  const players = await getPlayers();
-  const validPlayerIds = new Set(players.map((p) => p.id));
+  // Without Redis, player lists live in the browser — skip server player-id checks.
+  if (hasKvConfig()) {
+    const players = await getPlayers();
+    const validPlayerIds = new Set(players.map((p) => p.id));
+    const validEntries = entries.filter(
+      (e) =>
+        validPlayerIds.has(e.playerId) &&
+        e.value !== "" &&
+        e.value !== null &&
+        e.value !== undefined
+    );
 
-  const validEntries = entries.filter(
-    (e) => validPlayerIds.has(e.playerId) && e.value !== "" && e.value !== null && e.value !== undefined
+    if (validEntries.length === 0) {
+      return NextResponse.json({ error: "No valid entries to save" }, { status: 400 });
+    }
+
+    const result = await saveResultsBatch(
+      date,
+      validEntries.map((e) => ({
+        playerId: e.playerId,
+        value: e.value,
+        resultType: day.resultType,
+      }))
+    );
+
+    if (!result.ok) {
+      return NextResponse.json(
+        { error: "NO_SERVER_STORAGE", useClientStorage: true },
+        { status: 503 }
+      );
+    }
+
+    return NextResponse.json({ ok: true, saved: validEntries.length });
+  }
+
+  const filled = entries.filter(
+    (e) => e.value !== "" && e.value !== null && e.value !== undefined
   );
 
-  if (validEntries.length === 0) {
+  if (filled.length === 0) {
     return NextResponse.json({ error: "No valid entries to save" }, { status: 400 });
   }
 
-  await saveResultsBatch(
+  const result = await saveResultsBatch(
     date,
-    validEntries.map((e) => ({
+    filled.map((e) => ({
       playerId: e.playerId,
       value: e.value,
       resultType: day.resultType,
     }))
   );
 
-  return NextResponse.json({ ok: true, saved: validEntries.length });
+  if (!result.ok) {
+    return NextResponse.json(
+      {
+        error: "NO_SERVER_STORAGE",
+        useClientStorage: true,
+        message: "No Redis on this server — save results in the browser instead.",
+      },
+      { status: 503 }
+    );
+  }
+
+  return NextResponse.json({ ok: true, saved: filled.length });
 }

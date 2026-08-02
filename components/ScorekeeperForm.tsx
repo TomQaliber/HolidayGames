@@ -6,11 +6,13 @@ import { parseTimeInput } from "@/lib/holiday";
 import ResultInput from "@/components/ResultInput";
 import PlayerGroupSections from "@/components/PlayerGroupSections";
 import { celebrateResults } from "@/lib/celebrate";
+import { saveLocalResultsBatch } from "@/lib/client-store";
 
 interface ScorekeeperFormProps {
   challenge: DayChallenge;
   players: Player[];
   existingResults: ResultEntry[];
+  storageMode?: "redis" | "local";
   onSaved: () => void;
 }
 
@@ -54,6 +56,7 @@ export default function ScorekeeperForm({
   challenge,
   players,
   existingResults,
+  storageMode = "redis",
   onSaved,
 }: ScorekeeperFormProps) {
   const [open, setOpen] = useState(false);
@@ -105,6 +108,22 @@ export default function ScorekeeperForm({
     }
 
     try {
+      if (storageMode === "local") {
+        saveLocalResultsBatch(
+          challenge.date,
+          entries.map((e) => ({
+            playerId: e.playerId,
+            value: e.value,
+            resultType: challenge.resultType,
+          }))
+        );
+        setMessage(`Saved ${entries.length} result${entries.length === 1 ? "" : "s"}!`);
+        setOpen(false);
+        celebrateResults(entries.length);
+        onSaved();
+        return;
+      }
+
       const res = await fetch("/api/results", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -113,6 +132,21 @@ export default function ScorekeeperForm({
 
       if (!res.ok) {
         const data = await res.json();
+        if (res.status === 503 && data.useClientStorage) {
+          saveLocalResultsBatch(
+            challenge.date,
+            entries.map((e) => ({
+              playerId: e.playerId,
+              value: e.value,
+              resultType: challenge.resultType,
+            }))
+          );
+          setMessage(`Saved ${entries.length} result${entries.length === 1 ? "" : "s"}!`);
+          setOpen(false);
+          celebrateResults(entries.length);
+          onSaved();
+          return;
+        }
         setError(data.error ?? "Could not save results.");
         return;
       }
@@ -122,7 +156,18 @@ export default function ScorekeeperForm({
       celebrateResults(entries.length);
       onSaved();
     } catch {
-      setError("Something went wrong. Try again.");
+      saveLocalResultsBatch(
+        challenge.date,
+        entries.map((e) => ({
+          playerId: e.playerId,
+          value: e.value,
+          resultType: challenge.resultType,
+        }))
+      );
+      setMessage(`Saved ${entries.length} result${entries.length === 1 ? "" : "s"}!`);
+      setOpen(false);
+      celebrateResults(entries.length);
+      onSaved();
     } finally {
       setSaving(false);
     }

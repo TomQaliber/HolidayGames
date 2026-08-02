@@ -5,6 +5,10 @@ import type { ResultEntry } from "@/lib/types";
 
 const LOCAL_STORE_PATH = path.join(process.cwd(), ".data", "results.json");
 
+export type SaveResultsResult =
+  | { ok: true }
+  | { ok: false; error: "NO_SERVER_STORAGE" };
+
 function canUseLocalFiles(): boolean {
   return !process.env.VERCEL;
 }
@@ -64,7 +68,7 @@ export async function getResultsForDate(date: string): Promise<ResultEntry[]> {
 export async function saveResultsBatch(
   date: string,
   entries: { playerId: string; value: string | number; resultType: ResultEntry["resultType"] }[]
-): Promise<void> {
+): Promise<SaveResultsResult> {
   const submittedAt = new Date().toISOString();
   const kv = getKv();
 
@@ -79,13 +83,11 @@ export async function saveResultsBatch(
         } satisfies ResultEntry)
       )
     );
-    return;
+    return { ok: true };
   }
 
   if (!canUseLocalFiles()) {
-    throw new Error(
-      "Saving results needs Redis on Vercel. Add Upstash Redis in the Vercel dashboard."
-    );
+    return { ok: false, error: "NO_SERVER_STORAGE" };
   }
 
   const store = await readLocalStore();
@@ -98,4 +100,5 @@ export async function saveResultsBatch(
     };
   }
   await writeLocalStore(store);
+  return { ok: true };
 }

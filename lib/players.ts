@@ -7,8 +7,11 @@ import type { HolidayConfig, Player } from "@/lib/types";
 const PLAYERS_KV_KEY = "players:list";
 const LOCAL_STORE_PATH = path.join(process.cwd(), ".data", "players.json");
 
+export type SavePlayersResult =
+  | { ok: true; players: Player[] }
+  | { ok: false; error: "NO_SERVER_STORAGE" };
+
 function canUseLocalFiles(): boolean {
-  // Vercel serverless has a read-only filesystem under /var/task
   return !process.env.VERCEL;
 }
 
@@ -69,23 +72,21 @@ export async function getPlayers(): Promise<Player[]> {
   return defaults;
 }
 
-export async function savePlayers(players: Player[]): Promise<Player[]> {
+export async function savePlayers(players: Player[]): Promise<SavePlayersResult> {
   const normalized = players.map(normalizePlayer);
   const kv = getKv();
 
   if (kv) {
     await kv.set(PLAYERS_KV_KEY, normalized);
-    return normalized;
+    return { ok: true, players: normalized };
   }
 
   if (!canUseLocalFiles()) {
-    throw new Error(
-      "Player changes need Redis on Vercel. Add Upstash Redis in the Vercel dashboard."
-    );
+    return { ok: false, error: "NO_SERVER_STORAGE" };
   }
 
   await writeLocalStore(normalized);
-  return normalized;
+  return { ok: true, players: normalized };
 }
 
 function normalizePlayer(player: Player): Player {

@@ -18,7 +18,10 @@ Edit [`data/holiday.json`](data/holiday.json) — dates and daily challenges. Re
 
 ## Managing players
 
-Use **Manage players** in the header (or go to `/setup`) to add, edit, or remove family members, pick emojis, and mark them as kid or grown-up. Players are saved to Redis (production) or `.data/players.json` (local dev).
+Use **Manage players** in the header (or go to `/setup`) to add, edit, or remove family members, pick emojis, and mark them as kid or grown-up.
+
+- **With Redis:** players and results sync across devices.
+- **Without Redis (Vercel):** data is saved in the browser on that phone (fine for passing one phone around).
 
 Default players from `holiday.json` are used only the first time, before anyone visits setup.
 
