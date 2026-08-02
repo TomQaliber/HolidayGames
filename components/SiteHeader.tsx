@@ -9,7 +9,11 @@ export default function SiteHeader() {
       <p className="font-display text-sm font-medium uppercase tracking-widest text-orange">
         ☀️ Festival of Fun ☀️
       </p>
-      <h1 className="font-display text-3xl font-bold text-navy">{config.name}</h1>
+      <h1 className="font-display text-3xl font-bold text-navy">
+        <Link href="/today" className="hover:underline">
+          {config.name}
+        </Link>
+      </h1>
       <Link
         href="/setup"
         className="mt-2 inline-block font-display text-sm font-semibold text-hot-pink underline"
