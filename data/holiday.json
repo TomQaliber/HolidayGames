@@ -1,0 +1,78 @@
+{
+  "name": "Summer Holiday 2026",
+  "startDate": "2026-06-26",
+  "endDate": "2026-07-09",
+  "players": [
+    { "id": "tom", "name": "Tom", "emoji": "🎯", "group": "adult" },
+    { "id": "mum", "name": "Mum", "emoji": "🌻", "group": "adult" },
+    { "id": "dad", "name": "Dad", "emoji": "🎪", "group": "adult" },
+    { "id": "lily", "name": "Lily", "emoji": "🦋", "group": "child" },
+    { "id": "nana", "name": "Nana", "emoji": "☀️", "group": "adult" }
+  ],
+  "days": [
+    {
+      "day": 1,
+      "date": "2026-06-26",
+      "title": "Backyard Obstacle Course",
+      "description": "Set up 5 stations in the garden: crawl under a table, hop through hoops, balance a beanbag on your head, toss a ball into a bucket, and sprint to the finish. Everyone gets two tries — keep your best time!",
+      "durationMinutes": 60,
+      "resultType": "time",
+      "resultLabel": "Best time",
+      "resultUnit": "seconds",
+      "lowerIsBetter": true,
+      "tips": [
+        "Use whatever you have — chairs, cushions, skipping ropes",
+        "Younger players can skip a station with a helping hand",
+        "Cheer loud — that's half the fun!"
+      ]
+    },
+    {
+      "day": 2,
+      "date": "2026-06-27",
+      "title": "Paper Airplane Target Practice",
+      "description": "Fold your best paper airplane and stand behind a line. You have 15 throws at a target (a laundry basket or taped square on the wall). Count how many land inside!",
+      "durationMinutes": 45,
+      "resultType": "count",
+      "resultLabel": "Hits on target",
+      "resultUnit": "hits",
+      "tips": [
+        "Try different folds — see what flies farthest",
+        "Move the line closer for little ones"
+      ]
+    },
+    {
+      "day": 3,
+      "date": "2026-06-28",
+      "title": "Family Summer Trivia",
+      "description": "20 questions about holidays, sunshine, ice cream, and silly facts. One point per correct answer. Work alone or in pairs — your choice!",
+      "durationMinutes": 60,
+      "resultType": "score",
+      "resultLabel": "Points scored",
+      "resultUnit": "points"
+    },
+    {
+      "day": 4,
+      "date": "2026-06-29",
+      "title": "Guess the Summer Tune",
+      "description": "One person hums a summer song while everyone else writes down their guess. Most creative wrong answers get a bonus shout-out!",
+      "durationMinutes": 45,
+      "resultType": "text",
+      "resultLabel": "Your funniest wrong guess",
+      "tips": [
+        "No phones for looking up lyrics!",
+        "Wrong answers are often the best part"
+      ]
+    },
+    {
+      "day": 5,
+      "date": "2026-06-30",
+      "title": "Book-on-Head Balance Walk",
+      "description": "Balance a book on your head and walk a marked course without using your hands. Time starts when you step off the line and stops when you finish — or when the book falls!",
+      "durationMinutes": 45,
+      "resultType": "time",
+      "resultLabel": "Best time",
+      "resultUnit": "seconds",
+      "lowerIsBetter": true
+    }
+  ]
+}

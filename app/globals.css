@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-cream: #fff8e7;
+  --color-sun: #ffe566;
+  --color-coral: #ff6b6b;
+  --color-turquoise: #4ecdc4;
+  --color-hot-pink: #ff2d6f;
+  --color-orange: #ff9f43;
+  --color-navy: #2d3561;
+  --color-brown: #5c4033;
+  --font-display: var(--font-fredoka);
+  --font-body: var(--font-nunito);
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-navy);
+  font-family: var(--font-body), system-ui, sans-serif;
+  min-height: 100dvh;
+}
+
+.font-display {
+  font-family: var(--font-display), system-ui, sans-serif;
+}
+
+.bunting {
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--color-coral) 0 20px,
+    var(--color-sun) 20px 40px,
+    var(--color-turquoise) 40px 60px,
+    var(--color-hot-pink) 60px 80px,
+    var(--color-orange) 80px 100px
+  );
+  height: 8px;
+}
+
+.sunburst-header {
+  background:
+    radial-gradient(circle at 50% 120%, var(--color-sun) 0%, transparent 60%),
+    var(--color-cream);
+}
+
+.card-festival {
+  background: white;
+  border: 3px solid var(--color-navy);
+  border-radius: 1.25rem;
+  box-shadow: 4px 4px 0 var(--color-coral);
+}
+
+.card-festival-alt {
+  background: white;
+  border: 3px solid var(--color-navy);
+  border-radius: 1.25rem;
+  box-shadow: 4px 4px 0 var(--color-turquoise);
+}
+
+.btn-festival {
+  background: var(--color-hot-pink);
+  color: white;
+  border: 3px solid var(--color-navy);
+  border-radius: 9999px;
+  box-shadow: 3px 3px 0 var(--color-navy);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 600;
+  min-height: 48px;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.btn-festival:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--color-navy);
+}
+
+.btn-festival-secondary {
+  background: var(--color-turquoise);
+  color: var(--color-navy);
+  border: 3px solid var(--color-navy);
+  border-radius: 9999px;
+  box-shadow: 3px 3px 0 var(--color-navy);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 600;
+  min-height: 48px;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.btn-festival-secondary:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--color-navy);
+}
+
+.input-festival {
+  border: 3px solid var(--color-navy);
+  border-radius: 0.75rem;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  font-size: 1.125rem;
+  background: white;
+  width: 100%;
+}
+
+.input-festival:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-sun);
+}
+
+.polka-bg {
+  background-image: radial-gradient(var(--color-sun) 20%, transparent 20%);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
