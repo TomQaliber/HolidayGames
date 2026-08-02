@@ -33,11 +33,7 @@ export async function PUT(request: Request) {
   const result = await savePlayers(players);
   if (!result.ok) {
     return NextResponse.json(
-      {
-        error: "NO_SERVER_STORAGE",
-        useClientStorage: true,
-        message: "No Redis on this server — save players in the browser instead.",
-      },
+      { error: "Failed to save players. Please try again." },
       { status: 503 }
     );
   }
