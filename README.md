@@ -6,7 +6,7 @@ A lightweight, mobile-first family holiday games site. One daily challenge, one 
 
 ```bash
 npm install
-cp .env.example .env.local   # set FAMILY_PIN
+cp .env.example .env.local   # set FAMILY_PIN and Redis credentials
 npm run dev
 ```
 
@@ -20,8 +20,7 @@ Edit [`data/holiday.json`](data/holiday.json) — dates and daily challenges. Re
 
 Use **Manage players** in the header (or go to `/setup`) to add, edit, or remove family members, pick emojis, and mark them as kid or grown-up.
 
-- **With Redis:** players and results sync across devices.
-- **Without Redis (Vercel):** data is saved in the browser on that phone (fine for passing one phone around).
+Players and results sync across all devices via Redis.
 
 Default players from `holiday.json` are used only the first time, before anyone visits setup.
 
@@ -29,18 +28,25 @@ Default players from `holiday.json` are used only the first time, before anyone 
 
 1. Push this repo to GitHub and import in [Vercel](https://vercel.com).
 2. Add a **Redis** integration from the Vercel Marketplace (Upstash Redis).  
-   Accept either `KV_REST_API_URL` + `KV_REST_API_TOKEN`, or `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`.  
-   Without Redis, the site still loads, but players/results will not persist on Vercel.
+   This sets `KV_REST_API_URL` + `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`).
 3. Set environment variable `FAMILY_PIN` in the Vercel project settings.
 4. Deploy and share the URL + PIN with your family.
 
-## Local development without Redis
+## Local development
 
-If `KV_REST_API_URL` is not set, results are stored in `.data/results.json` on disk automatically.
+Set the Redis credentials in `.env.local`:
+
+```
+FAMILY_PIN=1234
+KV_REST_API_URL=https://...
+KV_REST_API_TOKEN=...
+```
+
+You can use your Vercel/Upstash Redis instance for local development, or create a separate Upstash database.
 
 ## Stack
 
 - Next.js 15 (App Router)
 - Tailwind CSS 4
-- Vercel KV / Upstash Redis (production)
+- Upstash Redis (via @vercel/kv)
 - JSON config for challenges

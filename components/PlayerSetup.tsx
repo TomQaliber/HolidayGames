@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { Player, PlayerGroup } from "@/lib/types";
 import { createPlayerId } from "@/lib/player-utils";
-import { loadLocalPlayers, saveLocalPlayers } from "@/lib/client-store";
 import EmojiPicker from "@/components/EmojiPicker";
 
 interface PlayerSetupProps {
@@ -19,15 +18,6 @@ export default function PlayerSetup({ initialPlayers }: PlayerSetupProps) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [usingBrowserStorage, setUsingBrowserStorage] = useState(false);
-
-  useEffect(() => {
-    const local = loadLocalPlayers();
-    if (local) {
-      setPlayers(local);
-      setUsingBrowserStorage(true);
-    }
-  }, []);
 
   function resetForm() {
     setName("");
@@ -102,25 +92,14 @@ export default function PlayerSetup({ initialPlayers }: PlayerSetupProps) {
       });
 
       if (res.ok) {
-        setUsingBrowserStorage(false);
         setMessage("Players saved!");
         return;
       }
 
       const data = await res.json();
-      if (res.status === 503 && data.useClientStorage) {
-        saveLocalPlayers(players);
-        setUsingBrowserStorage(true);
-        setMessage("Players saved on this device!");
-        return;
-      }
-
       setError(data.message ?? data.error ?? "Could not save players.");
     } catch {
-      // Offline / network — still keep them on this phone
-      saveLocalPlayers(players);
-      setUsingBrowserStorage(true);
-      setMessage("Players saved on this device!");
+      setError("Network error. Please check your connection and try again.");
     } finally {
       setSaving(false);
     }
@@ -203,11 +182,6 @@ export default function PlayerSetup({ initialPlayers }: PlayerSetupProps) {
           {kids.length === 1 ? "" : "s"}, {adults.length} grown-up
           {adults.length === 1 ? "" : "s"}
         </p>
-        {usingBrowserStorage && (
-          <p className="mt-2 text-xs text-navy/50">
-            Saved on this device only. Add Redis on Vercel to sync across phones.
-          </p>
-        )}
 
         {players.length === 0 ? (
           <p className="mt-4 text-center text-navy/50">No players yet — add someone above!</p>
