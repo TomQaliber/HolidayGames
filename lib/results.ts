@@ -5,11 +5,16 @@ import type { ResultEntry } from "@/lib/types";
 
 const LOCAL_STORE_PATH = path.join(process.cwd(), ".data", "results.json");
 
+function canUseLocalFiles(): boolean {
+  return !process.env.VERCEL;
+}
+
 function resultKey(date: string, playerId: string): string {
   return `results:${date}:${playerId}`;
 }
 
 async function readLocalStore(): Promise<Record<string, ResultEntry>> {
+  if (!canUseLocalFiles()) return {};
   try {
     const raw = await fs.readFile(LOCAL_STORE_PATH, "utf-8");
     return JSON.parse(raw) as Record<string, ResultEntry>;
@@ -19,11 +24,12 @@ async function readLocalStore(): Promise<Record<string, ResultEntry>> {
 }
 
 async function writeLocalStore(store: Record<string, ResultEntry>): Promise<void> {
+  if (!canUseLocalFiles()) return;
   try {
     await fs.mkdir(path.dirname(LOCAL_STORE_PATH), { recursive: true });
     await fs.writeFile(LOCAL_STORE_PATH, JSON.stringify(store, null, 2));
-  } catch {
-    // Vercel serverless filesystem is read-only — ignore persist failures.
+  } catch (error) {
+    console.error("Failed to write local results store:", error);
   }
 }
 
@@ -74,6 +80,12 @@ export async function saveResultsBatch(
       )
     );
     return;
+  }
+
+  if (!canUseLocalFiles()) {
+    throw new Error(
+      "Saving results needs Redis on Vercel. Add Upstash Redis in the Vercel dashboard."
+    );
   }
 
   const store = await readLocalStore();

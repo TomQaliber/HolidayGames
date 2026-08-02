@@ -7,6 +7,11 @@ import type { HolidayConfig, Player } from "@/lib/types";
 const PLAYERS_KV_KEY = "players:list";
 const LOCAL_STORE_PATH = path.join(process.cwd(), ".data", "players.json");
 
+function canUseLocalFiles(): boolean {
+  // Vercel serverless has a read-only filesystem under /var/task
+  return !process.env.VERCEL;
+}
+
 function getDefaultPlayers(): Player[] {
   const config = holidayData as HolidayConfig;
   return config.players.map((player) => ({
@@ -16,6 +21,7 @@ function getDefaultPlayers(): Player[] {
 }
 
 async function readLocalStore(): Promise<Player[] | null> {
+  if (!canUseLocalFiles()) return null;
   try {
     const raw = await fs.readFile(LOCAL_STORE_PATH, "utf-8");
     const parsed = JSON.parse(raw) as Player[];
@@ -26,11 +32,12 @@ async function readLocalStore(): Promise<Player[] | null> {
 }
 
 async function writeLocalStore(players: Player[]): Promise<void> {
+  if (!canUseLocalFiles()) return;
   try {
     await fs.mkdir(path.dirname(LOCAL_STORE_PATH), { recursive: true });
     await fs.writeFile(LOCAL_STORE_PATH, JSON.stringify(players, null, 2));
-  } catch {
-    // Vercel serverless filesystem is read-only — ignore persist failures.
+  } catch (error) {
+    console.error("Failed to write local players store:", error);
   }
 }
 
@@ -69,6 +76,12 @@ export async function savePlayers(players: Player[]): Promise<Player[]> {
   if (kv) {
     await kv.set(PLAYERS_KV_KEY, normalized);
     return normalized;
+  }
+
+  if (!canUseLocalFiles()) {
+    throw new Error(
+      "Player changes need Redis on Vercel. Add Upstash Redis in the Vercel dashboard."
+    );
   }
 
   await writeLocalStore(normalized);
