@@ -5,6 +5,8 @@ import { getResultsForDate } from "@/lib/results";
 import { getPlayers } from "@/lib/players";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function TodayPage() {
   const config = getHolidayConfig();
   const challenge = getTodayChallenge();
