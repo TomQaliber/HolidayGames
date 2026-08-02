@@ -28,8 +28,11 @@ Default players from `holiday.json` are used only the first time, before anyone 
 
 1. Push this repo to GitHub and import in [Vercel](https://vercel.com).
 2. Add a **Redis** integration from the Vercel Marketplace (Upstash Redis).  
-   This sets `KV_REST_API_URL` + `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`).
-3. Set environment variable `FAMILY_PIN` in the Vercel project settings.
+   This automatically sets `KV_REST_API_URL` + `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`).
+3. **Manually add** the `FAMILY_PIN` environment variable in Vercel:
+   - Go to your project → Settings → Environment Variables
+   - Add `FAMILY_PIN` with your chosen PIN value (e.g., `1234`)
+   - This is separate from Redis — it's a plain environment variable for authentication
 4. Deploy and share the URL + PIN with your family.
 
 ## Local development
