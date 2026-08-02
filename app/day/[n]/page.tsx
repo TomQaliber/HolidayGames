@@ -5,6 +5,8 @@ import { getDayByNumber } from "@/lib/holiday";
 import { getResultsForDate } from "@/lib/results";
 import { getPlayers } from "@/lib/players";
 
+export const dynamic = "force-dynamic";
+
 interface DayPageProps {
   params: Promise<{ n: string }>;
 }

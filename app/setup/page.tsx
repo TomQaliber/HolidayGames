@@ -3,6 +3,8 @@ import SiteHeader from "@/components/SiteHeader";
 import PlayerSetup from "@/components/PlayerSetup";
 import { getPlayers } from "@/lib/players";
 
+export const dynamic = "force-dynamic";
+
 export default async function SetupPage() {
   const players = await getPlayers();
 
