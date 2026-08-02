@@ -1,15 +1,11 @@
-import { kv } from "@vercel/kv";
 import { promises as fs } from "fs";
 import path from "path";
 import holidayData from "@/data/holiday.json";
+import { getKv } from "@/lib/kv";
 import type { HolidayConfig, Player } from "@/lib/types";
 
 const PLAYERS_KV_KEY = "players:list";
 const LOCAL_STORE_PATH = path.join(process.cwd(), ".data", "players.json");
-
-function hasKvConfig(): boolean {
-  return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
-}
 
 function getDefaultPlayers(): Player[] {
   const config = holidayData as HolidayConfig;
@@ -30,19 +26,30 @@ async function readLocalStore(): Promise<Player[] | null> {
 }
 
 async function writeLocalStore(players: Player[]): Promise<void> {
-  await fs.mkdir(path.dirname(LOCAL_STORE_PATH), { recursive: true });
-  await fs.writeFile(LOCAL_STORE_PATH, JSON.stringify(players, null, 2));
+  try {
+    await fs.mkdir(path.dirname(LOCAL_STORE_PATH), { recursive: true });
+    await fs.writeFile(LOCAL_STORE_PATH, JSON.stringify(players, null, 2));
+  } catch {
+    // Vercel serverless filesystem is read-only — ignore persist failures.
+  }
 }
 
 export async function getPlayers(): Promise<Player[]> {
-  if (hasKvConfig()) {
-    const stored = await kv.get<Player[]>(PLAYERS_KV_KEY);
-    if (stored && stored.length > 0) {
-      return stored.map(normalizePlayer);
+  const kv = getKv();
+
+  if (kv) {
+    try {
+      const stored = await kv.get<Player[]>(PLAYERS_KV_KEY);
+      if (stored && stored.length > 0) {
+        return stored.map(normalizePlayer);
+      }
+      const defaults = getDefaultPlayers();
+      await kv.set(PLAYERS_KV_KEY, defaults);
+      return defaults;
+    } catch (error) {
+      console.error("Failed to load players from Redis:", error);
+      return getDefaultPlayers();
     }
-    const defaults = getDefaultPlayers();
-    await kv.set(PLAYERS_KV_KEY, defaults);
-    return defaults;
   }
 
   const local = await readLocalStore();
@@ -57,13 +64,14 @@ export async function getPlayers(): Promise<Player[]> {
 
 export async function savePlayers(players: Player[]): Promise<Player[]> {
   const normalized = players.map(normalizePlayer);
+  const kv = getKv();
 
-  if (hasKvConfig()) {
+  if (kv) {
     await kv.set(PLAYERS_KV_KEY, normalized);
-  } else {
-    await writeLocalStore(normalized);
+    return normalized;
   }
 
+  await writeLocalStore(normalized);
   return normalized;
 }
 

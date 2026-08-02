@@ -25,7 +25,9 @@ Default players from `holiday.json` are used only the first time, before anyone 
 ## Deploy to Vercel
 
 1. Push this repo to GitHub and import in [Vercel](https://vercel.com).
-2. Add a **Redis** integration from the Vercel Marketplace (Upstash Redis). This sets `KV_REST_API_URL` and `KV_REST_API_TOKEN`.
+2. Add a **Redis** integration from the Vercel Marketplace (Upstash Redis).  
+   Accept either `KV_REST_API_URL` + `KV_REST_API_TOKEN`, or `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`.  
+   Without Redis, the site still loads, but players/results will not persist on Vercel.
 3. Set environment variable `FAMILY_PIN` in the Vercel project settings.
 4. Deploy and share the URL + PIN with your family.
 

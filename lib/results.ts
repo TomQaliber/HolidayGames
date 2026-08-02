@@ -1,13 +1,9 @@
-import { kv } from "@vercel/kv";
 import { promises as fs } from "fs";
 import path from "path";
+import { getKv } from "@/lib/kv";
 import type { ResultEntry } from "@/lib/types";
 
 const LOCAL_STORE_PATH = path.join(process.cwd(), ".data", "results.json");
-
-function hasKvConfig(): boolean {
-  return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
-}
 
 function resultKey(date: string, playerId: string): string {
   return `results:${date}:${playerId}`;
@@ -23,23 +19,34 @@ async function readLocalStore(): Promise<Record<string, ResultEntry>> {
 }
 
 async function writeLocalStore(store: Record<string, ResultEntry>): Promise<void> {
-  await fs.mkdir(path.dirname(LOCAL_STORE_PATH), { recursive: true });
-  await fs.writeFile(LOCAL_STORE_PATH, JSON.stringify(store, null, 2));
+  try {
+    await fs.mkdir(path.dirname(LOCAL_STORE_PATH), { recursive: true });
+    await fs.writeFile(LOCAL_STORE_PATH, JSON.stringify(store, null, 2));
+  } catch {
+    // Vercel serverless filesystem is read-only — ignore persist failures.
+  }
 }
 
 export async function getResultsForDate(date: string): Promise<ResultEntry[]> {
-  if (hasKvConfig()) {
-    const keys = await kv.keys(`results:${date}:*`);
-    if (keys.length === 0) return [];
+  const kv = getKv();
 
-    const entries = await Promise.all(
-      keys.map(async (key) => {
-        const entry = await kv.get<ResultEntry>(key);
-        return entry;
-      })
-    );
+  if (kv) {
+    try {
+      const keys = await kv.keys(`results:${date}:*`);
+      if (keys.length === 0) return [];
 
-    return entries.filter((e): e is ResultEntry => e !== null);
+      const entries = await Promise.all(
+        keys.map(async (key) => {
+          const entry = await kv.get<ResultEntry>(key);
+          return entry;
+        })
+      );
+
+      return entries.filter((e): e is ResultEntry => e !== null);
+    } catch (error) {
+      console.error("Failed to load results from Redis:", error);
+      return [];
+    }
   }
 
   const store = await readLocalStore();
@@ -53,8 +60,9 @@ export async function saveResultsBatch(
   entries: { playerId: string; value: string | number; resultType: ResultEntry["resultType"] }[]
 ): Promise<void> {
   const submittedAt = new Date().toISOString();
+  const kv = getKv();
 
-  if (hasKvConfig()) {
+  if (kv) {
     await Promise.all(
       entries.map((entry) =>
         kv.set(resultKey(date, entry.playerId), {
