@@ -1,78 +1,232 @@
 {
-  "name": "Summer Holiday 2026",
-  "startDate": "2026-06-26",
-  "endDate": "2026-07-09",
+  "name": "Zomervakantie 2026",
+  "startDate": "2026-08-15",
+  "endDate": "2026-08-29",
   "players": [
     { "id": "tom", "name": "Tom", "emoji": "🎯", "group": "adult" },
-    { "id": "mum", "name": "Mum", "emoji": "🌻", "group": "adult" },
-    { "id": "dad", "name": "Dad", "emoji": "🎪", "group": "adult" },
+    { "id": "mum", "name": "Mama", "emoji": "🌻", "group": "adult" },
+    { "id": "dad", "name": "Papa", "emoji": "🎪", "group": "adult" },
     { "id": "lily", "name": "Lily", "emoji": "🦋", "group": "child" },
-    { "id": "nana", "name": "Nana", "emoji": "☀️", "group": "adult" }
+    { "id": "nana", "name": "Oma", "emoji": "☀️", "group": "adult" }
   ],
   "days": [
     {
       "day": 1,
-      "date": "2026-06-26",
-      "title": "Backyard Obstacle Course",
-      "description": "Set up 5 stations in the garden: crawl under a table, hop through hoops, balance a beanbag on your head, toss a ball into a bucket, and sprint to the finish. Everyone gets two tries — keep your best time!",
+      "date": "2026-08-15",
+      "title": "Hindernissenparcours",
+      "description": "Bouw 5 stations in de tuin: kruip onder een tafel, spring door hoepels, balanceer een zak op je hoofd, gooi een bal in een emmer en sprint naar de finish. Iedereen krijgt twee pogingen — noteer je beste tijd!",
       "durationMinutes": 60,
       "resultType": "time",
-      "resultLabel": "Best time",
-      "resultUnit": "seconds",
+      "resultLabel": "Beste tijd",
+      "resultUnit": "seconden",
       "lowerIsBetter": true,
       "tips": [
-        "Use whatever you have — chairs, cushions, skipping ropes",
-        "Younger players can skip a station with a helping hand",
-        "Cheer loud — that's half the fun!"
+        "Gebruik wat je hebt — stoelen, kussens, springtouwen",
+        "Jongere spelers mogen een station overslaan met hulp",
+        "Luid aanmoedigen — dat hoort erbij!"
       ]
     },
     {
       "day": 2,
-      "date": "2026-06-27",
-      "title": "Paper Airplane Target Practice",
-      "description": "Fold your best paper airplane and stand behind a line. You have 15 throws at a target (a laundry basket or taped square on the wall). Count how many land inside!",
+      "date": "2026-08-16",
+      "title": "Papieren Vliegtuig Mikken",
+      "description": "Vouw je beste papieren vliegtuigje en ga achter een lijn staan. Je hebt 15 worpen op een doel (een wasmand of een vierkant op de muur). Tel hoeveel er in landen!",
       "durationMinutes": 45,
       "resultType": "count",
-      "resultLabel": "Hits on target",
-      "resultUnit": "hits",
+      "resultLabel": "Aantal raak",
+      "resultUnit": "treffers",
       "tips": [
-        "Try different folds — see what flies farthest",
-        "Move the line closer for little ones"
+        "Probeer verschillende vouwpatronen — kijk welke het verst vliegt",
+        "Zet de lijn dichterbij voor de kleintjes"
       ]
     },
     {
       "day": 3,
-      "date": "2026-06-28",
-      "title": "Family Summer Trivia",
-      "description": "20 questions about holidays, sunshine, ice cream, and silly facts. One point per correct answer. Work alone or in pairs — your choice!",
-      "durationMinutes": 60,
-      "resultType": "score",
-      "resultLabel": "Points scored",
-      "resultUnit": "points"
+      "date": "2026-08-17",
+      "title": "Bekers Stapelen",
+      "description": "Stapel 10 bekers zo snel mogelijk tot een piramide en haal ze daarna weer af tot één stapel. De tijd begint als je de eerste beker aanraakt en stopt als de laatste beker terug op de stapel staat. Beste van 3 pogingen!",
+      "durationMinutes": 30,
+      "resultType": "time",
+      "resultLabel": "Beste tijd",
+      "resultUnit": "seconden",
+      "lowerIsBetter": true,
+      "tips": [
+        "Oefen eerst het piramidepatroon",
+        "Blijf kalm — haasten zorgt voor fouten!"
+      ]
     },
     {
       "day": 4,
-      "date": "2026-06-29",
-      "title": "Guess the Summer Tune",
-      "description": "One person hums a summer song while everyone else writes down their guess. Most creative wrong answers get a bonus shout-out!",
-      "durationMinutes": 45,
-      "resultType": "text",
-      "resultLabel": "Your funniest wrong guess",
+      "date": "2026-08-18",
+      "title": "Balletje in de Beker Gooien",
+      "description": "Ga achter een lijn staan en probeer een pingpongballetje in een beker op tafel te gooien. Je krijgt 20 pogingen — hoeveel kun je er in krijgen?",
+      "durationMinutes": 30,
+      "resultType": "count",
+      "resultLabel": "Balletjes raak",
+      "resultUnit": "balletjes",
       "tips": [
-        "No phones for looking up lyrics!",
-        "Wrong answers are often the best part"
+        "Probeer verschillende worpen — onderhand, bovenhand",
+        "Mik op één stuiter op tafel eerst"
       ]
     },
     {
       "day": 5,
-      "date": "2026-06-30",
-      "title": "Book-on-Head Balance Walk",
-      "description": "Balance a book on your head and walk a marked course without using your hands. Time starts when you step off the line and stops when you finish — or when the book falls!",
+      "date": "2026-08-19",
+      "title": "Boek op je Hoofd Lopen",
+      "description": "Balanceer een boek op je hoofd en loop een uitgezet parcours zonder je handen te gebruiken. De tijd begint als je van de lijn stapt en stopt als je finisht — of als het boek valt!",
       "durationMinutes": 45,
       "resultType": "time",
-      "resultLabel": "Best time",
-      "resultUnit": "seconds",
-      "lowerIsBetter": true
+      "resultLabel": "Beste tijd",
+      "resultUnit": "seconden",
+      "lowerIsBetter": true,
+      "tips": [
+        "Loop rustig en kijk recht voor je uit",
+        "Een zwaarder boek balanceert soms makkelijker"
+      ]
+    },
+    {
+      "day": 6,
+      "date": "2026-08-20",
+      "title": "Balletje in de Beker Rollen",
+      "description": "Zet een beker aan het einde van de tafel. Rol een pingpongballetje over de tafel en probeer het in de beker te krijgen. Je krijgt 20 pogingen — tel je successen!",
+      "durationMinutes": 30,
+      "resultType": "count",
+      "resultLabel": "Balletjes raak",
+      "resultUnit": "balletjes",
+      "tips": [
+        "Controle is belangrijk — niet te hard, niet te zacht",
+        "Let op de hoek van de tafel"
+      ]
+    },
+    {
+      "day": 7,
+      "date": "2026-08-21",
+      "title": "Rietjes Doolhof",
+      "description": "Bouw een doolhof met rietjes die je op een plat oppervlak plakt. Leid daarna een knikker door je doolhof door het oppervlak te kantelen. Meet hoe lang het duurt om van start tot finish te komen!",
+      "durationMinutes": 60,
+      "resultType": "time",
+      "resultLabel": "Doolhof tijd",
+      "resultUnit": "seconden",
+      "lowerIsBetter": true,
+      "tips": [
+        "Ontwerp je doolhof eerst op papier",
+        "Maak het uitdagend maar wel haalbaar!"
+      ]
+    },
+    {
+      "day": 8,
+      "date": "2026-08-22",
+      "title": "Lepel en Bal Race",
+      "description": "Balanceer een pingpongballetje op een lepel en voltooi een hindernissenparcours zonder het te laten vallen. Als het balletje valt, raap het op en ga verder waar je was. De snelste tijd wint!",
+      "durationMinutes": 45,
+      "resultType": "time",
+      "resultLabel": "Parcours tijd",
+      "resultUnit": "seconden",
+      "lowerIsBetter": true,
+      "tips": [
+        "Houd je ogen op het balletje",
+        "Loop rustig — geen haast nodig"
+      ]
+    },
+    {
+      "day": 9,
+      "date": "2026-08-23",
+      "title": "Bottle Flip",
+      "description": "Flip een gedeeltelijk gevulde waterfles en probeer hem rechtop te laten landen. Je hebt 2 minuten — hoeveel succesvolle flips kun je doen?",
+      "durationMinutes": 30,
+      "resultType": "count",
+      "resultLabel": "Geslaagde flips",
+      "resultUnit": "flips",
+      "tips": [
+        "Vul de fles ongeveer 1/3 met water",
+        "Maak een polsbeweging als je loslaat"
+      ]
+    },
+    {
+      "day": 10,
+      "date": "2026-08-24",
+      "title": "Raad de Combinatie",
+      "description": "Eén speler kiest een geheime 4-cijferige code. De anderen raden om de beurt — na elke gok horen ze hoeveel cijfers correct zijn én op de juiste plek staan. Wie het minste pogingen nodig heeft, wint!",
+      "durationMinutes": 45,
+      "resultType": "count",
+      "resultLabel": "Aantal pogingen",
+      "resultUnit": "pogingen",
+      "lowerIsBetter": true,
+      "tips": [
+        "Gebruik logica om de opties te verkleinen",
+        "Houd je eerdere gokken bij"
+      ]
+    },
+    {
+      "day": 11,
+      "date": "2026-08-25",
+      "title": "Omgooien en Inrollen",
+      "description": "Zet een beker rechtop aan het einde van de tafel. Gooi eerst de beker om met een bal, en rol daarna een ander balletje in de omgevallen beker. Meet hoe lang het duurt om beide taken te voltooien!",
+      "durationMinutes": 30,
+      "resultType": "time",
+      "resultLabel": "Totale tijd",
+      "resultUnit": "seconden",
+      "lowerIsBetter": true,
+      "tips": [
+        "Gooi de beker om zodat hij naar jou toe wijst",
+        "Neem de tijd om te mikken bij het rollen"
+      ]
+    },
+    {
+      "day": 12,
+      "date": "2026-08-26",
+      "title": "Wasknijper Race",
+      "description": "Je hebt 60 seconden om zoveel mogelijk wasknijpers aan een touw te hangen dat tussen twee stoelen gespannen is. Met één hand! Tel ze op aan het einde.",
+      "durationMinutes": 30,
+      "resultType": "count",
+      "resultLabel": "Wasknijpers geplaatst",
+      "resultUnit": "knijpers",
+      "tips": [
+        "Leg de wasknijpers klaar in een stapel",
+        "Vind een ritme en houd het vol"
+      ]
+    },
+    {
+      "day": 13,
+      "date": "2026-08-27",
+      "title": "Pétanque Toernooi",
+      "description": "Klassiek Frans jeu de boules! Gooi eerst het kleine doelballetje (cochonnet), en gooi dan om de beurt je ballen zo dicht mogelijk bij het doel. De dichtstbijzijnde bal scoort 1 punt per bal die dichter is dan de beste van de tegenstander. Eerste tot 13 wint!",
+      "durationMinutes": 60,
+      "resultType": "score",
+      "resultLabel": "Eindscore",
+      "resultUnit": "punten",
+      "tips": [
+        "Je mag de ballen van tegenstanders wegkaatsen",
+        "Onderhands gooien geeft meer controle"
+      ]
+    },
+    {
+      "day": 14,
+      "date": "2026-08-28",
+      "title": "Auto's in de Zone",
+      "description": "Markeer zones op een tafel met verschillende puntwaarden (10, 20, 50 punten). Duw speelgoedauto's vanaf één kant en scoor op basis van waar ze stoppen. 5 auto's per persoon — hoogste totaal wint!",
+      "durationMinutes": 45,
+      "resultType": "score",
+      "resultLabel": "Totaal punten",
+      "resultUnit": "punten",
+      "tips": [
+        "De randzone is riskant maar levert veel op",
+        "Zachte duwtjes zijn makkelijker te controleren"
+      ]
+    },
+    {
+      "day": 15,
+      "date": "2026-08-29",
+      "title": "Vier op een Rij Toernooi",
+      "description": "Klassiek Vier op een Rij toernooi! Speel tegen elk familielid één keer. Winst = 3 punten, Gelijk = 1 punt, Verlies = 0 punten. Hoogste totaal punten wint het toernooi!",
+      "durationMinutes": 60,
+      "resultType": "score",
+      "resultLabel": "Toernooi punten",
+      "resultUnit": "punten",
+      "tips": [
+        "Controleer de middelste kolom",
+        "Let op diagonale dreigingen!"
+      ]
     }
   ]
 }
