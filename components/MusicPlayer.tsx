@@ -11,20 +11,20 @@ interface MusicPrefs {
 }
 
 function loadPrefs(): MusicPrefs {
-  if (typeof window === "undefined") return { enabled: false, volume: 0.3 };
+  if (typeof window === "undefined") return { enabled: false, volume: 0.5 };
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored) as MusicPrefs;
       return {
         enabled: Boolean(parsed.enabled),
-        volume: typeof parsed.volume === "number" ? parsed.volume : 0.3,
+        volume: typeof parsed.volume === "number" ? parsed.volume : 0.5,
       };
     }
   } catch {
     // ignore
   }
-  return { enabled: false, volume: 0.3 };
+  return { enabled: false, volume: 0.5 };
 }
 
 function savePrefs(prefs: MusicPrefs): void {
@@ -38,7 +38,7 @@ function savePrefs(prefs: MusicPrefs): void {
 
 export default function MusicPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.3);
+  const [volume, setVolume] = useState(0.5);
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
 
@@ -58,15 +58,15 @@ export default function MusicPlayer() {
     };
   }, []);
 
-  const handleToggle = useCallback(() => {
+  const handleToggle = useCallback(async () => {
     const player = getMusicPlayer();
     
     if (!hasInteracted) {
-      player.initialize();
+      await player.initialize();
       setHasInteracted(true);
     }
 
-    player.toggle();
+    await player.toggle();
     const nowPlaying = player.getIsPlaying();
     setIsPlaying(nowPlaying);
     savePrefs({ enabled: nowPlaying, volume });
