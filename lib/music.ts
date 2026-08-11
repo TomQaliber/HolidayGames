@@ -7,51 +7,20 @@ const NOTE_FREQUENCIES: Record<string, NoteFrequency> = {
 };
 
 const MELODY_PATTERN = [
-  { note: "C5", duration: 0.25 },
-  { note: "E5", duration: 0.25 },
-  { note: "G5", duration: 0.25 },
-  { note: "E5", duration: 0.25 },
-  { note: "F5", duration: 0.25 },
-  { note: "A5", duration: 0.25 },
-  { note: "G5", duration: 0.5 },
-  { note: "E5", duration: 0.25 },
-  { note: "D5", duration: 0.25 },
-  { note: "C5", duration: 0.25 },
-  { note: "E5", duration: 0.25 },
-  { note: "G5", duration: 0.5 },
-  { note: "C6", duration: 0.25 },
-  { note: "B5", duration: 0.25 },
-  { note: "A5", duration: 0.25 },
-  { note: "G5", duration: 0.25 },
-  { note: "F5", duration: 0.25 },
-  { note: "E5", duration: 0.25 },
-  { note: "D5", duration: 0.5 },
-  { note: "G4", duration: 0.25 },
-  { note: "A4", duration: 0.25 },
-  { note: "B4", duration: 0.25 },
-  { note: "C5", duration: 0.75 },
+  "C5", "E5", "G5", "E5", "F5", "A5", "G5", "G5",
+  "E5", "D5", "C5", "E5", "G5", "G5", "C6", "B5",
+  "A5", "G5", "F5", "E5", "D5", "D5", "G4", "A4",
+  "B4", "C5", "C5", "C5", "REST", "REST", "REST", "REST",
 ];
 
-const BASS_PATTERN = [
-  { note: "C4", duration: 1 },
-  { note: "G4", duration: 1 },
-  { note: "F4", duration: 1 },
-  { note: "G4", duration: 1 },
-];
-
-const ANNOUNCEMENT_MELODY = [
-  { note: "G5", duration: 0.15 },
-  { note: "C6", duration: 0.15 },
-  { note: "E5", duration: 0.15 },
-  { note: "G5", duration: 0.3 },
-];
+const BASS_NOTES = ["C3", "C3", "G3", "G3", "F3", "F3", "G3", "G3"];
 
 export class SummerMusicPlayer {
   private audioContext: AudioContext | null = null;
   private masterGain: GainNode | null = null;
   private isPlaying = false;
-  private loopTimeout: ReturnType<typeof setTimeout> | null = null;
-  private announcementTimeout: ReturnType<typeof setTimeout> | null = null;
+  private intervalId: ReturnType<typeof setInterval> | null = null;
+  private stepIndex = 0;
   private volume = 0.5;
 
   async initialize(): Promise<boolean> {
@@ -67,103 +36,58 @@ export class SummerMusicPlayer {
         await this.audioContext.resume();
       }
       
+      console.log("Audio initialized, state:", this.audioContext.state);
       return true;
     } catch (err) {
-      console.error("Web Audio API not supported:", err);
+      console.error("Web Audio API error:", err);
       return false;
     }
   }
 
-  private playNote(
-    frequency: number,
-    startTime: number,
-    duration: number,
-    type: OscillatorType = "sine",
-    gainValue = 0.15
-  ): void {
+  private playTone(frequency: number, duration: number, type: OscillatorType = "sine", gain = 0.3): void {
     if (!this.audioContext || !this.masterGain) return;
 
-    const oscillator = this.audioContext.createOscillator();
+    const osc = this.audioContext.createOscillator();
     const gainNode = this.audioContext.createGain();
 
-    oscillator.type = type;
-    oscillator.frequency.value = frequency;
+    osc.type = type;
+    osc.frequency.value = frequency;
+    
+    gainNode.gain.value = gain;
 
-    gainNode.gain.setValueAtTime(0, startTime);
-    gainNode.gain.linearRampToValueAtTime(gainValue, startTime + 0.02);
-    gainNode.gain.setValueAtTime(gainValue, startTime + duration - 0.05);
-    gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
-
-    oscillator.connect(gainNode);
+    osc.connect(gainNode);
     gainNode.connect(this.masterGain);
 
-    oscillator.start(startTime);
-    oscillator.stop(startTime + duration);
+    osc.start();
+    
+    gainNode.gain.setValueAtTime(gain, this.audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration * 0.9);
+    
+    osc.stop(this.audioContext.currentTime + duration);
   }
 
-  private playMelodyLoop(): void {
+  private playStep(): void {
     if (!this.audioContext || !this.isPlaying) return;
 
-    const now = this.audioContext.currentTime;
-    const tempo = 140;
-    const beatDuration = 60 / tempo;
+    const melodyNote = MELODY_PATTERN[this.stepIndex % MELODY_PATTERN.length];
+    const bassNote = BASS_NOTES[Math.floor(this.stepIndex / 2) % BASS_NOTES.length];
 
-    let melodyTime = now;
-    for (const { note, duration } of MELODY_PATTERN) {
-      const freq = NOTE_FREQUENCIES[note];
+    if (melodyNote !== "REST") {
+      const freq = NOTE_FREQUENCIES[melodyNote];
       if (freq) {
-        this.playNote(freq, melodyTime, duration * beatDuration, "sine", 0.12);
+        this.playTone(freq, 0.2, "sine", 0.25);
+        this.playTone(freq * 2, 0.2, "sine", 0.08);
       }
-      melodyTime += duration * beatDuration;
     }
 
-    let bassTime = now;
-    for (const { note, duration } of BASS_PATTERN) {
-      const freq = NOTE_FREQUENCIES[note];
-      if (freq) {
-        this.playNote(freq * 0.5, bassTime, duration * beatDuration, "triangle", 0.08);
+    if (this.stepIndex % 2 === 0) {
+      const bassFreq = NOTE_FREQUENCIES[bassNote];
+      if (bassFreq) {
+        this.playTone(bassFreq * 0.5, 0.3, "triangle", 0.2);
       }
-      bassTime += duration * beatDuration;
     }
 
-    const loopDuration = MELODY_PATTERN.reduce((sum, n) => sum + n.duration, 0) * beatDuration;
-    
-    this.loopTimeout = setTimeout(() => {
-      if (this.isPlaying) {
-        this.playMelodyLoop();
-      }
-    }, loopDuration * 1000);
-  }
-
-  private playAnnouncement(): void {
-    if (!this.audioContext || !this.masterGain) return;
-
-    const now = this.audioContext.currentTime;
-    let time = now;
-
-    for (const { note, duration } of ANNOUNCEMENT_MELODY) {
-      const freq = NOTE_FREQUENCIES[note];
-      if (freq) {
-        this.playNote(freq, time, duration, "square", 0.08);
-        this.playNote(freq * 1.5, time, duration, "sine", 0.05);
-      }
-      time += duration;
-    }
-  }
-
-  private scheduleAnnouncements(): void {
-    if (!this.isPlaying) return;
-
-    const minDelay = 45000;
-    const maxDelay = 90000;
-    const delay = minDelay + Math.random() * (maxDelay - minDelay);
-
-    this.announcementTimeout = setTimeout(() => {
-      if (this.isPlaying) {
-        this.playAnnouncement();
-        this.scheduleAnnouncements();
-      }
-    }, delay);
+    this.stepIndex++;
   }
 
   async start(): Promise<void> {
@@ -171,30 +95,40 @@ export class SummerMusicPlayer {
     
     if (!this.audioContext) {
       const initialized = await this.initialize();
-      if (!initialized) return;
+      if (!initialized) {
+        console.error("Failed to initialize audio");
+        return;
+      }
     }
 
     if (this.audioContext?.state === "suspended") {
       await this.audioContext.resume();
+      console.log("Audio resumed, state:", this.audioContext.state);
     }
 
     this.isPlaying = true;
-    this.playMelodyLoop();
-    this.scheduleAnnouncements();
+    this.stepIndex = 0;
+    
+    this.playStep();
+    
+    this.intervalId = setInterval(() => {
+      if (this.isPlaying) {
+        this.playStep();
+      }
+    }, 180);
+    
+    console.log("Music started");
   }
 
   stop(): void {
     this.isPlaying = false;
     
-    if (this.loopTimeout) {
-      clearTimeout(this.loopTimeout);
-      this.loopTimeout = null;
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
     }
     
-    if (this.announcementTimeout) {
-      clearTimeout(this.announcementTimeout);
-      this.announcementTimeout = null;
-    }
+    console.log("Music stopped");
   }
 
   setVolume(value: number): void {
