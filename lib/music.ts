@@ -1,17 +1,74 @@
-const NOTES = [523.25, 659.25, 783.99, 659.25, 698.46, 880.00, 783.99, 783.99,
-                659.25, 587.33, 523.25, 659.25, 783.99, 783.99, 1046.50, 987.77,
-                880.00, 783.99, 698.46, 659.25, 587.33, 587.33, 392.00, 440.00,
-                493.88, 523.25, 523.25, 523.25, 0, 0, 0, 0];
+// Funky summer groove - 120 BPM feel
+// Pattern: 16 steps per bar, 4 bars total
+const LEAD_PATTERN = [
+  // Bar 1 - Funky riff
+  { step: 0, note: 587, dur: 0.1 },   // D5
+  { step: 2, note: 659, dur: 0.1 },   // E5
+  { step: 3, note: 698, dur: 0.15 },  // F5
+  { step: 6, note: 784, dur: 0.2 },   // G5
+  { step: 10, note: 659, dur: 0.1 },  // E5
+  { step: 12, note: 587, dur: 0.15 }, // D5
+  { step: 14, note: 523, dur: 0.1 },  // C5
+  // Bar 2
+  { step: 16, note: 587, dur: 0.1 },
+  { step: 18, note: 659, dur: 0.1 },
+  { step: 19, note: 698, dur: 0.15 },
+  { step: 22, note: 880, dur: 0.25 }, // A5 - high point
+  { step: 26, note: 784, dur: 0.1 },
+  { step: 28, note: 698, dur: 0.15 },
+  // Bar 3 - variation
+  { step: 32, note: 784, dur: 0.1 },
+  { step: 34, note: 880, dur: 0.1 },
+  { step: 35, note: 784, dur: 0.15 },
+  { step: 38, note: 659, dur: 0.2 },
+  { step: 42, note: 587, dur: 0.1 },
+  { step: 44, note: 523, dur: 0.15 },
+  // Bar 4 - resolve
+  { step: 48, note: 587, dur: 0.15 },
+  { step: 51, note: 659, dur: 0.1 },
+  { step: 54, note: 698, dur: 0.2 },
+  { step: 58, note: 587, dur: 0.3 },
+];
 
-const BASS = [130.81, 130.81, 196.00, 196.00, 174.61, 174.61, 196.00, 196.00];
+// Funky bass line - syncopated
+const BASS_PATTERN = [
+  { step: 0, note: 147 },   // D3
+  { step: 3, note: 147 },
+  { step: 6, note: 165 },   // E3
+  { step: 8, note: 147 },
+  { step: 11, note: 131 },  // C3
+  { step: 14, note: 147 },
+  { step: 16, note: 147 },
+  { step: 19, note: 147 },
+  { step: 22, note: 175 },  // F3
+  { step: 24, note: 165 },
+  { step: 27, note: 147 },
+  { step: 30, note: 131 },
+  { step: 32, note: 196 },  // G3
+  { step: 35, note: 196 },
+  { step: 38, note: 175 },
+  { step: 40, note: 165 },
+  { step: 43, note: 147 },
+  { step: 46, note: 131 },
+  { step: 48, note: 147 },
+  { step: 51, note: 147 },
+  { step: 54, note: 165 },
+  { step: 56, note: 175 },
+  { step: 59, note: 147 },
+  { step: 62, note: 147 },
+];
+
+// Hi-hat pattern for rhythm
+const HIHAT_STEPS = [0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62];
+
+const TOTAL_STEPS = 64;
 
 export class SummerMusicPlayer {
   private ctx: AudioContext | null = null;
-  private gain: GainNode | null = null;
   private playing = false;
   private timer: ReturnType<typeof setInterval> | null = null;
   private step = 0;
-  private vol = 0.7;
+  private vol = 0.6;
 
   async initialize(): Promise<boolean> {
     if (typeof window === "undefined") return false;
@@ -20,12 +77,7 @@ export class SummerMusicPlayer {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const AC = window.AudioContext || (window as any).webkitAudioContext;
       this.ctx = new AC();
-      this.gain = this.ctx.createGain();
-      this.gain.gain.value = this.vol;
-      this.gain.connect(this.ctx.destination);
-      
       await this.ctx.resume();
-      console.log("Audio ready:", this.ctx.state);
       return true;
     } catch (e) {
       console.error("Audio init failed:", e);
@@ -33,34 +85,74 @@ export class SummerMusicPlayer {
     }
   }
 
-  private beep(freq: number, dur: number, volume: number): void {
-    if (!this.ctx || !this.gain || freq === 0) return;
+  private synth(freq: number, dur: number, type: OscillatorType, vol: number): void {
+    if (!this.ctx) return;
     
-    const o = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const now = this.ctx.currentTime;
     
-    o.frequency.value = freq;
-    o.type = "sine";
-    g.gain.value = volume;
+    osc.type = type;
+    osc.frequency.value = freq;
     
-    o.connect(g);
-    g.connect(this.gain);
+    gain.gain.setValueAtTime(vol * this.vol, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + dur);
     
-    o.start();
-    o.stop(this.ctx.currentTime + dur);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    
+    osc.start(now);
+    osc.stop(now + dur + 0.05);
+  }
+
+  private hihat(): void {
+    if (!this.ctx) return;
+    
+    const bufferSize = this.ctx.sampleRate * 0.05;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.1));
+    }
+    
+    const source = this.ctx.createBufferSource();
+    const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+    
+    source.buffer = buffer;
+    filter.type = "highpass";
+    filter.frequency.value = 7000;
+    gain.gain.value = 0.15 * this.vol;
+    
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+    
+    source.start();
   }
 
   private tick(): void {
     if (!this.playing || !this.ctx) return;
     
-    const note = NOTES[this.step % NOTES.length];
-    if (note > 0) {
-      this.beep(note, 0.15, 0.4);
+    const s = this.step % TOTAL_STEPS;
+    
+    // Lead synth
+    const lead = LEAD_PATTERN.find(n => n.step === s);
+    if (lead) {
+      this.synth(lead.note, lead.dur, "sawtooth", 0.25);
+      this.synth(lead.note * 1.002, lead.dur, "sawtooth", 0.15); // slight detune for thickness
     }
     
-    if (this.step % 4 === 0) {
-      const bass = BASS[Math.floor(this.step / 4) % BASS.length];
-      this.beep(bass, 0.3, 0.3);
+    // Bass
+    const bass = BASS_PATTERN.find(n => n.step === s);
+    if (bass) {
+      this.synth(bass.note, 0.15, "square", 0.35);
+    }
+    
+    // Hi-hat
+    if (HIHAT_STEPS.includes(s)) {
+      this.hihat();
     }
     
     this.step++;
@@ -81,10 +173,8 @@ export class SummerMusicPlayer {
     this.playing = true;
     this.step = 0;
     
-    console.log("Starting music loop...");
-    
-    this.tick();
-    this.timer = setInterval(() => this.tick(), 180);
+    // 120 BPM = 500ms per beat, 16 steps per bar = ~125ms per step
+    this.timer = setInterval(() => this.tick(), 125);
   }
 
   stop(): void {
@@ -93,12 +183,10 @@ export class SummerMusicPlayer {
       clearInterval(this.timer);
       this.timer = null;
     }
-    console.log("Music stopped");
   }
 
   setVolume(v: number): void {
     this.vol = Math.max(0, Math.min(1, v));
-    if (this.gain) this.gain.gain.value = this.vol;
   }
 
   getVolume(): number {
@@ -121,7 +209,6 @@ export class SummerMusicPlayer {
     this.stop();
     this.ctx?.close();
     this.ctx = null;
-    this.gain = null;
   }
 }
 
