@@ -1,65 +1,44 @@
-// Funky summer groove - 120 BPM feel
-// Pattern: 16 steps per bar, 4 bars total
-const LEAD_PATTERN = [
-  // Bar 1 - Funky riff
-  { step: 0, note: 587, dur: 0.1 },   // D5
-  { step: 2, note: 659, dur: 0.1 },   // E5
-  { step: 3, note: 698, dur: 0.15 },  // F5
-  { step: 6, note: 784, dur: 0.2 },   // G5
-  { step: 10, note: 659, dur: 0.1 },  // E5
-  { step: 12, note: 587, dur: 0.15 }, // D5
-  { step: 14, note: 523, dur: 0.1 },  // C5
-  // Bar 2
-  { step: 16, note: 587, dur: 0.1 },
-  { step: 18, note: 659, dur: 0.1 },
-  { step: 19, note: 698, dur: 0.15 },
-  { step: 22, note: 880, dur: 0.25 }, // A5 - high point
-  { step: 26, note: 784, dur: 0.1 },
-  { step: 28, note: 698, dur: 0.15 },
-  // Bar 3 - variation
-  { step: 32, note: 784, dur: 0.1 },
-  { step: 34, note: 880, dur: 0.1 },
-  { step: 35, note: 784, dur: 0.15 },
-  { step: 38, note: 659, dur: 0.2 },
-  { step: 42, note: 587, dur: 0.1 },
-  { step: 44, note: 523, dur: 0.15 },
-  // Bar 4 - resolve
-  { step: 48, note: 587, dur: 0.15 },
-  { step: 51, note: 659, dur: 0.1 },
-  { step: 54, note: 698, dur: 0.2 },
-  { step: 58, note: 587, dur: 0.3 },
-];
+// Deep house / chill summer groove - 115 BPM
+// No lead melody, just deep bass and rhythm
 
-// Funky bass line - syncopated
+// Deep bass line - sub frequencies
 const BASS_PATTERN = [
-  { step: 0, note: 147 },   // D3
-  { step: 3, note: 147 },
-  { step: 6, note: 165 },   // E3
-  { step: 8, note: 147 },
-  { step: 11, note: 131 },  // C3
-  { step: 14, note: 147 },
-  { step: 16, note: 147 },
-  { step: 19, note: 147 },
-  { step: 22, note: 175 },  // F3
-  { step: 24, note: 165 },
-  { step: 27, note: 147 },
-  { step: 30, note: 131 },
-  { step: 32, note: 196 },  // G3
-  { step: 35, note: 196 },
-  { step: 38, note: 175 },
-  { step: 40, note: 165 },
-  { step: 43, note: 147 },
-  { step: 46, note: 131 },
-  { step: 48, note: 147 },
-  { step: 51, note: 147 },
-  { step: 54, note: 165 },
-  { step: 56, note: 175 },
-  { step: 59, note: 147 },
-  { step: 62, note: 147 },
+  { step: 0, note: 55, dur: 0.3 },    // A1 - deep sub
+  { step: 4, note: 55, dur: 0.15 },
+  { step: 7, note: 62, dur: 0.2 },    // B1
+  { step: 10, note: 55, dur: 0.15 },
+  { step: 14, note: 49, dur: 0.25 },  // G1
+  { step: 16, note: 55, dur: 0.3 },
+  { step: 20, note: 55, dur: 0.15 },
+  { step: 23, note: 65, dur: 0.2 },   // C2
+  { step: 26, note: 55, dur: 0.15 },
+  { step: 30, note: 49, dur: 0.25 },
+  // Bar 2
+  { step: 32, note: 49, dur: 0.3 },   // G1
+  { step: 36, note: 49, dur: 0.15 },
+  { step: 39, note: 55, dur: 0.2 },
+  { step: 42, note: 62, dur: 0.15 },
+  { step: 46, note: 55, dur: 0.25 },
+  { step: 48, note: 44, dur: 0.3 },   // F1
+  { step: 52, note: 49, dur: 0.15 },
+  { step: 55, note: 55, dur: 0.2 },
+  { step: 58, note: 49, dur: 0.15 },
+  { step: 62, note: 55, dur: 0.25 },
 ];
 
-// Hi-hat pattern for rhythm
-const HIHAT_STEPS = [0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62];
+// Kick drum pattern
+const KICK_STEPS = [0, 8, 16, 24, 32, 40, 48, 56];
+
+// Hi-hat pattern - offbeat for groove
+const HIHAT_STEPS = [4, 12, 20, 28, 36, 44, 52, 60];
+
+// Soft chord stabs (not high pitched, mid-range)
+const CHORD_PATTERN = [
+  { step: 6, notes: [220, 277, 330] },  // Am chord (A3, C#4, E4)
+  { step: 22, notes: [196, 247, 294] }, // G chord
+  { step: 38, notes: [175, 220, 262] }, // F chord  
+  { step: 54, notes: [196, 247, 294] }, // G chord
+];
 
 const TOTAL_STEPS = 64;
 
@@ -85,35 +64,66 @@ export class SummerMusicPlayer {
     }
   }
 
-  private synth(freq: number, dur: number, type: OscillatorType, vol: number): void {
+  private bass(freq: number, dur: number): void {
     if (!this.ctx) return;
     
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
     const now = this.ctx.currentTime;
     
-    osc.type = type;
-    osc.frequency.value = freq;
+    // Main sub bass - sine wave for deep low end
+    const sub = this.ctx.createOscillator();
+    const subGain = this.ctx.createGain();
+    sub.type = "sine";
+    sub.frequency.value = freq;
+    subGain.gain.setValueAtTime(0.5 * this.vol, now);
+    subGain.gain.exponentialRampToValueAtTime(0.01, now + dur);
+    sub.connect(subGain);
+    subGain.connect(this.ctx.destination);
+    sub.start(now);
+    sub.stop(now + dur + 0.05);
     
-    gain.gain.setValueAtTime(vol * this.vol, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + dur);
+    // Harmonic layer - adds presence
+    const harm = this.ctx.createOscillator();
+    const harmGain = this.ctx.createGain();
+    harm.type = "triangle";
+    harm.frequency.value = freq * 2;
+    harmGain.gain.setValueAtTime(0.15 * this.vol, now);
+    harmGain.gain.exponentialRampToValueAtTime(0.01, now + dur * 0.7);
+    harm.connect(harmGain);
+    harmGain.connect(this.ctx.destination);
+    harm.start(now);
+    harm.stop(now + dur + 0.05);
+  }
+
+  private kick(): void {
+    if (!this.ctx) return;
+    
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(150, now);
+    osc.frequency.exponentialRampToValueAtTime(40, now + 0.1);
+    
+    gain.gain.setValueAtTime(0.7 * this.vol, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
     
     osc.connect(gain);
     gain.connect(this.ctx.destination);
     
     osc.start(now);
-    osc.stop(now + dur + 0.05);
+    osc.stop(now + 0.35);
   }
 
   private hihat(): void {
     if (!this.ctx) return;
     
-    const bufferSize = this.ctx.sampleRate * 0.05;
+    const bufferSize = this.ctx.sampleRate * 0.08;
     const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
     
     for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.1));
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.15));
     }
     
     const source = this.ctx.createBufferSource();
@@ -122,8 +132,8 @@ export class SummerMusicPlayer {
     
     source.buffer = buffer;
     filter.type = "highpass";
-    filter.frequency.value = 7000;
-    gain.gain.value = 0.15 * this.vol;
+    filter.frequency.value = 8000;
+    gain.gain.value = 0.12 * this.vol;
     
     source.connect(filter);
     filter.connect(gain);
@@ -132,27 +142,55 @@ export class SummerMusicPlayer {
     source.start();
   }
 
+  private chord(notes: number[]): void {
+    if (!this.ctx) return;
+    
+    const now = this.ctx.currentTime;
+    
+    for (const freq of notes) {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      
+      gain.gain.setValueAtTime(0.08 * this.vol, now);
+      gain.gain.setValueAtTime(0.08 * this.vol, now + 0.2);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+      
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      
+      osc.start(now);
+      osc.stop(now + 0.55);
+    }
+  }
+
   private tick(): void {
     if (!this.playing || !this.ctx) return;
     
     const s = this.step % TOTAL_STEPS;
     
-    // Lead synth
-    const lead = LEAD_PATTERN.find(n => n.step === s);
-    if (lead) {
-      this.synth(lead.note, lead.dur, "sawtooth", 0.25);
-      this.synth(lead.note * 1.002, lead.dur, "sawtooth", 0.15); // slight detune for thickness
+    // Deep bass
+    const bassNote = BASS_PATTERN.find(n => n.step === s);
+    if (bassNote) {
+      this.bass(bassNote.note, bassNote.dur);
     }
     
-    // Bass
-    const bass = BASS_PATTERN.find(n => n.step === s);
-    if (bass) {
-      this.synth(bass.note, 0.15, "square", 0.35);
+    // Kick drum
+    if (KICK_STEPS.includes(s)) {
+      this.kick();
     }
     
-    // Hi-hat
+    // Hi-hat (offbeat)
     if (HIHAT_STEPS.includes(s)) {
       this.hihat();
+    }
+    
+    // Soft chord stabs
+    const chordHit = CHORD_PATTERN.find(c => c.step === s);
+    if (chordHit) {
+      this.chord(chordHit.notes);
     }
     
     this.step++;
