@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fredoka, Nunito } from "next/font/google";
 import "./globals.css";
+import MusicPlayer from "@/components/MusicPlayer";
 
 const fredoka = Fredoka({
   subsets: ["latin"],
@@ -16,7 +17,7 @@ const nunito = Nunito({
 
 export const metadata: Metadata = {
   title: "Holiday Games",
-  description: "Daily family challenges — fun in the sun!",
+  description: "Dagelijkse familiespelletjes — plezier in de zon!",
 };
 
 export const viewport: Viewport = {
@@ -32,10 +33,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="nl">
       <body className={`${fredoka.variable} ${nunito.variable} antialiased`}>
         <div className="bunting" />
         <div className="mx-auto min-h-dvh max-w-[480px]">{children}</div>
+        <MusicPlayer />
       </body>
     </html>
   );
