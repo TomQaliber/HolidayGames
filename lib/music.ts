@@ -52,9 +52,9 @@ export class SummerMusicPlayer {
   private isPlaying = false;
   private loopTimeout: ReturnType<typeof setTimeout> | null = null;
   private announcementTimeout: ReturnType<typeof setTimeout> | null = null;
-  private volume = 0.3;
+  private volume = 0.5;
 
-  initialize(): boolean {
+  async initialize(): Promise<boolean> {
     if (typeof window === "undefined") return false;
     
     try {
@@ -62,9 +62,14 @@ export class SummerMusicPlayer {
       this.masterGain = this.audioContext.createGain();
       this.masterGain.connect(this.audioContext.destination);
       this.masterGain.gain.value = this.volume;
+      
+      if (this.audioContext.state === "suspended") {
+        await this.audioContext.resume();
+      }
+      
       return true;
-    } catch {
-      console.error("Web Audio API not supported");
+    } catch (err) {
+      console.error("Web Audio API not supported:", err);
       return false;
     }
   }
@@ -161,15 +166,16 @@ export class SummerMusicPlayer {
     }, delay);
   }
 
-  start(): void {
+  async start(): Promise<void> {
     if (this.isPlaying) return;
     
     if (!this.audioContext) {
-      if (!this.initialize()) return;
+      const initialized = await this.initialize();
+      if (!initialized) return;
     }
 
     if (this.audioContext?.state === "suspended") {
-      this.audioContext.resume();
+      await this.audioContext.resume();
     }
 
     this.isPlaying = true;
@@ -206,11 +212,11 @@ export class SummerMusicPlayer {
     return this.isPlaying;
   }
 
-  toggle(): void {
+  async toggle(): Promise<void> {
     if (this.isPlaying) {
       this.stop();
     } else {
-      this.start();
+      await this.start();
     }
   }
 
