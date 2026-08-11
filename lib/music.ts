@@ -1,167 +1,116 @@
-type NoteFrequency = number;
+const NOTES = [523.25, 659.25, 783.99, 659.25, 698.46, 880.00, 783.99, 783.99,
+                659.25, 587.33, 523.25, 659.25, 783.99, 783.99, 1046.50, 987.77,
+                880.00, 783.99, 698.46, 659.25, 587.33, 587.33, 392.00, 440.00,
+                493.88, 523.25, 523.25, 523.25, 0, 0, 0, 0];
 
-const NOTE_FREQUENCIES: Record<string, NoteFrequency> = {
-  C3: 130.81, G3: 196.00, F3: 174.61,
-  C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, B4: 493.88,
-  C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880.00, B5: 987.77,
-  C6: 1046.50,
-};
-
-const MELODY_PATTERN = [
-  "C5", "E5", "G5", "E5", "F5", "A5", "G5", "G5",
-  "E5", "D5", "C5", "E5", "G5", "G5", "C6", "B5",
-  "A5", "G5", "F5", "E5", "D5", "D5", "G4", "A4",
-  "B4", "C5", "C5", "C5", "REST", "REST", "REST", "REST",
-];
-
-const BASS_NOTES = ["C3", "C3", "G3", "G3", "F3", "F3", "G3", "G3"];
+const BASS = [130.81, 130.81, 196.00, 196.00, 174.61, 174.61, 196.00, 196.00];
 
 export class SummerMusicPlayer {
-  private audioContext: AudioContext | null = null;
-  private masterGain: GainNode | null = null;
-  private isPlaying = false;
-  private intervalId: ReturnType<typeof setInterval> | null = null;
-  private stepIndex = 0;
-  private volume = 0.6;
+  private ctx: AudioContext | null = null;
+  private gain: GainNode | null = null;
+  private playing = false;
+  private timer: ReturnType<typeof setInterval> | null = null;
+  private step = 0;
+  private vol = 0.7;
 
   async initialize(): Promise<boolean> {
     if (typeof window === "undefined") return false;
     
     try {
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      this.audioContext = new AudioContextClass();
-      this.masterGain = this.audioContext.createGain();
-      this.masterGain.connect(this.audioContext.destination);
-      this.masterGain.gain.value = this.volume;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const AC = window.AudioContext || (window as any).webkitAudioContext;
+      this.ctx = new AC();
+      this.gain = this.ctx.createGain();
+      this.gain.gain.value = this.vol;
+      this.gain.connect(this.ctx.destination);
       
-      if (this.audioContext.state === "suspended") {
-        await this.audioContext.resume();
-      }
-      
-      console.log("Audio initialized, state:", this.audioContext.state);
+      await this.ctx.resume();
+      console.log("Audio ready:", this.ctx.state);
       return true;
-    } catch (err) {
-      console.error("Web Audio API error:", err);
+    } catch (e) {
+      console.error("Audio init failed:", e);
       return false;
     }
   }
 
-  private playTone(frequency: number, duration: number, gain = 0.3): void {
-    if (!this.audioContext || !this.masterGain) return;
-
-    try {
-      const osc = this.audioContext.createOscillator();
-      const gainNode = this.audioContext.createGain();
-      const now = this.audioContext.currentTime;
-
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(frequency, now);
-      
-      gainNode.gain.setValueAtTime(gain, now);
-      gainNode.gain.linearRampToValueAtTime(gain * 0.8, now + duration * 0.1);
-      gainNode.gain.linearRampToValueAtTime(0.001, now + duration);
-
-      osc.connect(gainNode);
-      gainNode.connect(this.masterGain);
-
-      osc.start(now);
-      osc.stop(now + duration + 0.05);
-    } catch (err) {
-      console.error("Error playing tone:", err);
-    }
+  private beep(freq: number, dur: number, volume: number): void {
+    if (!this.ctx || !this.gain || freq === 0) return;
+    
+    const o = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    
+    o.frequency.value = freq;
+    o.type = "sine";
+    g.gain.value = volume;
+    
+    o.connect(g);
+    g.connect(this.gain);
+    
+    o.start();
+    o.stop(this.ctx.currentTime + dur);
   }
 
-  private playStep(): void {
-    if (!this.audioContext || !this.isPlaying) return;
-
-    try {
-      const melodyNote = MELODY_PATTERN[this.stepIndex % MELODY_PATTERN.length];
-      const bassNote = BASS_NOTES[Math.floor(this.stepIndex / 2) % BASS_NOTES.length];
-
-      if (melodyNote && melodyNote !== "REST") {
-        const freq = NOTE_FREQUENCIES[melodyNote];
-        if (freq) {
-          this.playTone(freq, 0.18, 0.35);
-        }
-      }
-
-      if (this.stepIndex % 4 === 0 && bassNote) {
-        const bassFreq = NOTE_FREQUENCIES[bassNote];
-        if (bassFreq) {
-          this.playTone(bassFreq, 0.35, 0.25);
-        }
-      }
-
-      this.stepIndex++;
-    } catch (err) {
-      console.error("Error in playStep:", err);
+  private tick(): void {
+    if (!this.playing || !this.ctx) return;
+    
+    const note = NOTES[this.step % NOTES.length];
+    if (note > 0) {
+      this.beep(note, 0.15, 0.4);
     }
+    
+    if (this.step % 4 === 0) {
+      const bass = BASS[Math.floor(this.step / 4) % BASS.length];
+      this.beep(bass, 0.3, 0.3);
+    }
+    
+    this.step++;
   }
 
   async start(): Promise<void> {
-    if (this.isPlaying) return;
+    if (this.playing) return;
     
-    try {
-      if (!this.audioContext) {
-        const initialized = await this.initialize();
-        if (!initialized) {
-          console.error("Failed to initialize audio");
-          return;
-        }
-      }
-
-      if (this.audioContext?.state === "suspended") {
-        await this.audioContext.resume();
-      }
-      
-      console.log("Audio context state:", this.audioContext?.state);
-
-      this.isPlaying = true;
-      this.stepIndex = 0;
-      
-      this.playStep();
-      
-      this.intervalId = setInterval(() => {
-        if (this.isPlaying && this.audioContext?.state === "running") {
-          this.playStep();
-        }
-      }, 200);
-      
-      console.log("Music started, interval set");
-    } catch (err) {
-      console.error("Error starting music:", err);
-      this.isPlaying = false;
+    if (!this.ctx) {
+      const ok = await this.initialize();
+      if (!ok) return;
     }
+    
+    if (this.ctx?.state === "suspended") {
+      await this.ctx.resume();
+    }
+
+    this.playing = true;
+    this.step = 0;
+    
+    console.log("Starting music loop...");
+    
+    this.tick();
+    this.timer = setInterval(() => this.tick(), 180);
   }
 
   stop(): void {
-    this.isPlaying = false;
-    
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
+    this.playing = false;
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
     }
-    
     console.log("Music stopped");
   }
 
-  setVolume(value: number): void {
-    this.volume = Math.max(0, Math.min(1, value));
-    if (this.masterGain) {
-      this.masterGain.gain.value = this.volume;
-    }
+  setVolume(v: number): void {
+    this.vol = Math.max(0, Math.min(1, v));
+    if (this.gain) this.gain.gain.value = this.vol;
   }
 
   getVolume(): number {
-    return this.volume;
+    return this.vol;
   }
 
   getIsPlaying(): boolean {
-    return this.isPlaying;
+    return this.playing;
   }
 
   async toggle(): Promise<void> {
-    if (this.isPlaying) {
+    if (this.playing) {
       this.stop();
     } else {
       await this.start();
@@ -170,11 +119,9 @@ export class SummerMusicPlayer {
 
   dispose(): void {
     this.stop();
-    if (this.audioContext) {
-      this.audioContext.close();
-      this.audioContext = null;
-    }
-    this.masterGain = null;
+    this.ctx?.close();
+    this.ctx = null;
+    this.gain = null;
   }
 }
 
