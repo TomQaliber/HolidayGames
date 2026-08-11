@@ -1,6 +1,7 @@
 type NoteFrequency = number;
 
 const NOTE_FREQUENCIES: Record<string, NoteFrequency> = {
+  C3: 130.81, G3: 196.00, F3: 174.61,
   C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, B4: 493.88,
   C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880.00, B5: 987.77,
   C6: 1046.50,
@@ -21,13 +22,14 @@ export class SummerMusicPlayer {
   private isPlaying = false;
   private intervalId: ReturnType<typeof setInterval> | null = null;
   private stepIndex = 0;
-  private volume = 0.5;
+  private volume = 0.6;
 
   async initialize(): Promise<boolean> {
     if (typeof window === "undefined") return false;
     
     try {
-      this.audioContext = new AudioContext();
+      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      this.audioContext = new AudioContextClass();
       this.masterGain = this.audioContext.createGain();
       this.masterGain.connect(this.audioContext.destination);
       this.masterGain.gain.value = this.volume;
@@ -44,80 +46,92 @@ export class SummerMusicPlayer {
     }
   }
 
-  private playTone(frequency: number, duration: number, type: OscillatorType = "sine", gain = 0.3): void {
+  private playTone(frequency: number, duration: number, gain = 0.3): void {
     if (!this.audioContext || !this.masterGain) return;
 
-    const osc = this.audioContext.createOscillator();
-    const gainNode = this.audioContext.createGain();
+    try {
+      const osc = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+      const now = this.audioContext.currentTime;
 
-    osc.type = type;
-    osc.frequency.value = frequency;
-    
-    gainNode.gain.value = gain;
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(frequency, now);
+      
+      gainNode.gain.setValueAtTime(gain, now);
+      gainNode.gain.linearRampToValueAtTime(gain * 0.8, now + duration * 0.1);
+      gainNode.gain.linearRampToValueAtTime(0.001, now + duration);
 
-    osc.connect(gainNode);
-    gainNode.connect(this.masterGain);
+      osc.connect(gainNode);
+      gainNode.connect(this.masterGain);
 
-    osc.start();
-    
-    gainNode.gain.setValueAtTime(gain, this.audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration * 0.9);
-    
-    osc.stop(this.audioContext.currentTime + duration);
+      osc.start(now);
+      osc.stop(now + duration + 0.05);
+    } catch (err) {
+      console.error("Error playing tone:", err);
+    }
   }
 
   private playStep(): void {
     if (!this.audioContext || !this.isPlaying) return;
 
-    const melodyNote = MELODY_PATTERN[this.stepIndex % MELODY_PATTERN.length];
-    const bassNote = BASS_NOTES[Math.floor(this.stepIndex / 2) % BASS_NOTES.length];
+    try {
+      const melodyNote = MELODY_PATTERN[this.stepIndex % MELODY_PATTERN.length];
+      const bassNote = BASS_NOTES[Math.floor(this.stepIndex / 2) % BASS_NOTES.length];
 
-    if (melodyNote !== "REST") {
-      const freq = NOTE_FREQUENCIES[melodyNote];
-      if (freq) {
-        this.playTone(freq, 0.2, "sine", 0.25);
-        this.playTone(freq * 2, 0.2, "sine", 0.08);
+      if (melodyNote && melodyNote !== "REST") {
+        const freq = NOTE_FREQUENCIES[melodyNote];
+        if (freq) {
+          this.playTone(freq, 0.18, 0.35);
+        }
       }
-    }
 
-    if (this.stepIndex % 2 === 0) {
-      const bassFreq = NOTE_FREQUENCIES[bassNote];
-      if (bassFreq) {
-        this.playTone(bassFreq * 0.5, 0.3, "triangle", 0.2);
+      if (this.stepIndex % 4 === 0 && bassNote) {
+        const bassFreq = NOTE_FREQUENCIES[bassNote];
+        if (bassFreq) {
+          this.playTone(bassFreq, 0.35, 0.25);
+        }
       }
-    }
 
-    this.stepIndex++;
+      this.stepIndex++;
+    } catch (err) {
+      console.error("Error in playStep:", err);
+    }
   }
 
   async start(): Promise<void> {
     if (this.isPlaying) return;
     
-    if (!this.audioContext) {
-      const initialized = await this.initialize();
-      if (!initialized) {
-        console.error("Failed to initialize audio");
-        return;
+    try {
+      if (!this.audioContext) {
+        const initialized = await this.initialize();
+        if (!initialized) {
+          console.error("Failed to initialize audio");
+          return;
+        }
       }
-    }
 
-    if (this.audioContext?.state === "suspended") {
-      await this.audioContext.resume();
-      console.log("Audio resumed, state:", this.audioContext.state);
-    }
-
-    this.isPlaying = true;
-    this.stepIndex = 0;
-    
-    this.playStep();
-    
-    this.intervalId = setInterval(() => {
-      if (this.isPlaying) {
-        this.playStep();
+      if (this.audioContext?.state === "suspended") {
+        await this.audioContext.resume();
       }
-    }, 180);
-    
-    console.log("Music started");
+      
+      console.log("Audio context state:", this.audioContext?.state);
+
+      this.isPlaying = true;
+      this.stepIndex = 0;
+      
+      this.playStep();
+      
+      this.intervalId = setInterval(() => {
+        if (this.isPlaying && this.audioContext?.state === "running") {
+          this.playStep();
+        }
+      }, 200);
+      
+      console.log("Music started, interval set");
+    } catch (err) {
+      console.error("Error starting music:", err);
+      this.isPlaying = false;
+    }
   }
 
   stop(): void {

@@ -11,20 +11,20 @@ interface MusicPrefs {
 }
 
 function loadPrefs(): MusicPrefs {
-  if (typeof window === "undefined") return { enabled: false, volume: 0.5 };
+  if (typeof window === "undefined") return { enabled: false, volume: 0.6 };
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored) as MusicPrefs;
       return {
         enabled: Boolean(parsed.enabled),
-        volume: typeof parsed.volume === "number" ? parsed.volume : 0.5,
+        volume: typeof parsed.volume === "number" ? parsed.volume : 0.6,
       };
     }
   } catch {
     // ignore
   }
-  return { enabled: false, volume: 0.5 };
+  return { enabled: false, volume: 0.6 };
 }
 
 function savePrefs(prefs: MusicPrefs): void {
@@ -38,7 +38,7 @@ function savePrefs(prefs: MusicPrefs): void {
 
 export default function MusicPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.5);
+  const [volume, setVolume] = useState(0.6);
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
 
@@ -48,14 +48,13 @@ export default function MusicPlayer() {
     
     const player = getMusicPlayer();
     player.setVolume(prefs.volume);
+    
+    const playing = player.getIsPlaying();
+    setIsPlaying(playing);
 
     if (prefs.enabled) {
       setHasInteracted(true);
     }
-
-    return () => {
-      player.stop();
-    };
   }, []);
 
   const handleToggle = useCallback(async () => {
